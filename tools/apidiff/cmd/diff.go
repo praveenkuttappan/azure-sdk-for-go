@@ -26,7 +26,7 @@ var diffCmd = &cobra.Command{
 	Use:   "diff <base export filepath> <target export filepath> <release tag version> [<specs repo commit hash> <Go generator version>]",
 	Short: "Generate a diff report between the two export report files, also note the version of the tag that will be released.",
 	Long: `The diff command consumes two JSON files with the export reports, along with the version of the tag that the module will be released under. The command generates a diff report between them. 
-	Optional arguements for generated code include the azure-rest-api-specs commit hash that the code was generated from and the Go generator version that was used to generate the code that is to be released. 
+	Optional arguments for generated code include the azure-rest-api-specs commit hash that the code was generated from and the Go generator version that was used to generate the code that is to be released. 
 	NOTE: Both optional values must be specified to be included in the markdown output.`,
 	Args: cobra.MinimumNArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {

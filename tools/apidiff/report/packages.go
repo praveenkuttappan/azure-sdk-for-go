@@ -179,7 +179,7 @@ func (r PkgsReport) IsEmpty() bool {
 // Leave the slice empty or nil to output the diff without the release headers.
 func (r *PkgsReport) ToMarkdown(args []string) string {
 	md := markdown.Writer{}
-	// 
+	// if the length of the arguments slice if greater than zero then the release headers will be added to the markdown output
 	if len(args) > 0 {
 		// the first value in the slice should be the version that will be released
 		r.writeHeader(&md, args[0])
