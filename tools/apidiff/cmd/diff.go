@@ -23,12 +23,14 @@ import (
 )
 
 var diffCmd = &cobra.Command{
-	Use:   "diff <base export filepath> <target export filepath> <release tag version>",
+	Use:   "diff <base export filepath> <target export filepath> <release tag version> [<specs repo commit hash> <Go generator version>]",
 	Short: "Generate a diff report between the two export report files, also note the version of the tag that will be released.",
-	Long:  `The diff command consumes two JSON files with the export reports, along with the version of the tag that the module will be released under. The command generates a diff report between them.`,
-	Args:  cobra.ExactArgs(3),
+	Long: `The diff command consumes two JSON files with the export reports, along with the version of the tag that the module will be released under. The command generates a diff report between them. 
+	Optional arguements for generated code include the azure-rest-api-specs commit hash that the code was generated from and the Go generator version that was used to generate the code that is to be released. 
+	NOTE: Both optional values must be specified to be included in the markdown output.`,
+	Args: cobra.MinimumNArgs(3),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return diffCommand(args[0], args[1], args[2])
+		return diffCommand(args[0], args[1], args[2], args)
 	},
 }
 
@@ -37,7 +39,7 @@ func init() {
 	diffCmd.PersistentFlags().BoolVarP(&asMarkdown, "markdown", "m", false, "emits the report in markdown format")
 }
 
-func diffCommand(basePath, targetPath, version string) error {
+func diffCommand(basePath, targetPath, version string, additionalArgs []string) error {
 	base, err := ioutil.ReadFile(basePath)
 	if err != nil {
 		return fmt.Errorf("failed to read base export file %s: %+v", basePath, err)
@@ -57,7 +59,10 @@ func diffCommand(basePath, targetPath, version string) error {
 	r := getPkgsReport(baseExport, targetExport)
 
 	if asMarkdown {
-		fmt.Println(r.ToMarkdown(version))
+		argsCP := []string{}
+		argsCP = append(argsCP, version)
+		argsCP = append(argsCP, additionalArgs[3:]...)
+		fmt.Println(r.ToMarkdown(argsCP))
 	} else {
 		b, _ := json.Marshal(r)
 		fmt.Println(string(b))

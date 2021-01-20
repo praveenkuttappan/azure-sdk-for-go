@@ -173,13 +173,21 @@ func (r PkgsReport) IsEmpty() bool {
 }
 
 // ToMarkdown writes the report to string in the markdown form.
-// The version parameter if set will output the release history title
+// The version parameter, if set, will output the release history title
 // and the release version header one level beneath it with the value specified.
-// Leave the version parameter empty to output the diff without the release headers.
-func (r *PkgsReport) ToMarkdown(version string) string {
+// The version parameter should be the first value in the args slice.
+// Leave the slice empty or nil to output the diff without the release headers.
+func (r *PkgsReport) ToMarkdown(args []string) string {
 	md := markdown.Writer{}
-	if len(version) > 0 {
-		r.writeHeader(&md, version)
+	// 
+	if len(args) > 0 {
+		// the first value in the slice should be the version that will be released
+		r.writeHeader(&md, args[0])
+		// the second and third values in the slice should be the azure-rest-api-specs commit hash and generator version
+		if len(args) == 3 {
+			r.writeSpecsVersion(&md, args[1])
+			r.writeGeneratorVersion(&md, args[2])
+		}
 	}
 	if r.IsEmpty() {
 		return ""
@@ -193,6 +201,14 @@ func (r *PkgsReport) ToMarkdown(version string) string {
 func (r *PkgsReport) writeHeader(md *markdown.Writer, version string) {
 	md.WriteTitle("Release History")
 	md.WriteTopLevelHeader(fmt.Sprintf("%s (Released)", version))
+}
+
+func (r *PkgsReport) writeSpecsVersion(md *markdown.Writer, version string) {
+	md.WriteLine(fmt.Sprintf("Generated from https://github.com/Azure/azure-rest-api-specs/tree/%s", version))
+}
+
+func (r *PkgsReport) writeGeneratorVersion(md *markdown.Writer, version string) {
+	md.WriteLine(fmt.Sprintf("Code generator @autorest/go@%s", version))
 }
 
 func (r *PkgsReport) writeAddedPackages(md *markdown.Writer) {
