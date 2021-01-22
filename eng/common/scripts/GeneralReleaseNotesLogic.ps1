@@ -69,16 +69,35 @@ function Parse-ReleaseHighlights ($content)
 
 function Filter-ReleaseHighlights ($releaseHighlights)
 {
+    $results = @{}
+
     foreach ($key in $releaseHighlights.Keys)
     {
         $keyInfo = $key.Split(":")
         $packageName = $keyInfo[0]
         $packageVersion = $keyInfo[1]
 
-        $existingPackages = GetExistingPackageVersions -PackageName $packageName
+        $csvMetaData = Get-CSVMetadata
+        $packageMetaData = $csvMetaData | Where-Object { $_.Package -eq $packageName }
 
-        if ()
+        if ($packageMetaData.ServiceName -eq "template")
+        {
+            continue
+        }
+
+        $existingPackages = GetExistingPackageVersions -PackageName $packageName `
+        -GroupId $packageMetaData.GroupId
+
+        $versionExists = $existingPackages | Where-Object { $_ -eq $packageVersion }
+
+        if ($null -eq $versionExists)
+        {
+            continue
+        }
+
+        $results.Add($key, $releaseHighlights[$key])
     }
+    return $results
 }
 
 function Write-GeneralReleaseNote ($releaseHighlights, $releaseFilePath)
